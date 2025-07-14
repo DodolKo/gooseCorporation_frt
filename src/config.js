@@ -15,7 +15,7 @@ const DEFAULT_CONFIG = {
 
 // Configuration de production (URL du backend Railway)
 const PRODUCTION_CONFIG = {
-    API_BASE_URL: '/api', // Utilise le proxy Netlify
+    API_BASE_URL: 'https://goosecorporationbck-production.up.railway.app/api',
     TIMEOUT: 15000,
     MAX_RETRIES: 3,
     RETRY_DELAY: 2000,
@@ -25,7 +25,10 @@ const PRODUCTION_CONFIG = {
 
 // Détection de l'environnement
 const isProduction = window.location.hostname !== 'localhost' && 
-                    window.location.hostname !== '127.0.0.1';
+                    window.location.hostname !== '127.0.0.1' &&
+                    !window.location.hostname.startsWith('192.168') &&
+                    !window.location.hostname.startsWith('10.') &&
+                    !window.location.hostname.startsWith('172.');
 
 // Configuration active
 export const CONFIG = isProduction ? PRODUCTION_CONFIG : DEFAULT_CONFIG;

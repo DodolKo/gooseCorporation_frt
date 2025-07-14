@@ -4,6 +4,7 @@ import './api.js';
 import './utils.js';
 import './entry.js';
 import './checkin.js';
+import './diagnostics.js';
 
 // Initialisation de l'application GooseCorp
 document.addEventListener('DOMContentLoaded', async function() {
