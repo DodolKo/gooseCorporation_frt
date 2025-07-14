@@ -1,13 +1,246 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GooseCorp - Entrée des Visiteurs</title>
+    <link rel="stylesheet" href="src/assets/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header avec navigation -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-building"></i>
+                <span>GooseCorp</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link active">
+                    <i class="fas fa-sign-in-alt"></i> Entrée
+                </a>
+                <a href="checkout.html" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i> Sortie
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="main">
+        <div class="container">
+            <!-- Status de l'API -->
+            <div id="apiStatus" class="api-status hidden">
+                <i class="fas fa-wifi"></i>
+                <span>Connexion à l'API...</span>
+            </div>
+
+            <!-- Choix du type d'entrée -->
+            <div class="entry-choice">
+                <div class="choice-buttons">
+                    <button type="button" id="newVisitorBtn" class="choice-btn active">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Nouveau Visiteur</span>
+                        <small>Première visite</small>
+                    </button>
+                    <button type="button" id="returningVisitorBtn" class="choice-btn">
+                        <i class="fas fa-id-badge"></i>
+                        <span>Déjà un badge</span>
+                        <small>Visite de retour</small>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulaire pour nouveau visiteur -->
+            <div id="newVisitorForm" class="form-container">
+                <h1>
+                    <i class="fas fa-user-plus"></i>
+                    Enregistrement des Visiteurs
+                </h1>
+                <p class="subtitle">Veuillez remplir vos informations pour votre visite</p>
+
+                <form id="checkinForm" class="form">
+                    <!-- Informations personnelles -->
+                    <div class="form-section">
+                        <h2>Informations Personnelles</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">Prénom *</label>
+                                <input type="text" id="firstName" name="firstName" required>
+                                <span class="error-message" id="firstNameError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Nom *</label>
+                                <input type="text" id="lastName" name="lastName" required>
+                                <span class="error-message" id="lastNameError"></span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" name="email" required>
+                                <span class="error-message" id="emailError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Téléphone</label>
+                                <input type="tel" id="phone" name="phone">
+                                <span class="error-message" id="phoneError"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="company">Entreprise</label>
+                            <input type="text" id="company" name="company">
+                        </div>
+                    </div>
+
+                    <!-- Raison de la visite -->
+                    <div class="form-section">
+                        <h2>Raison de la Visite</h2>
+                        <div class="form-group">
+                            <label for="visitReason">Type de visite *</label>
+                            <select id="visitReason" name="visitReason" required>
+                                <option value="">Sélectionnez une raison</option>
+                                <option value="MEETING">Rendez-vous</option>
+                                <option value="FORMATION">Formation</option>
+                                <option value="OTHER">Autre</option>
+                                <option value="DELIVERY">Livraison</option>
+                                <option value="MAINTENANCE">Maintenance</option>
+                            </select>
+                            <span class="error-message" id="visitReasonError"></span>
+                        </div>
+
+                        <!-- Sélection du personnel (affiché si MEETING) -->
+                        <div class="form-group" id="staffGroup" style="display: none;">
+                            <label for="staffId">Personnel à rencontrer *</label>
+                            <select id="staffId" name="staffId">
+                                <option value="">Chargement...</option>
+                            </select>
+                            <span class="error-message" id="staffIdError"></span>
+                        </div>
+
+                        <!-- Sélection de la formation (affiché si FORMATION) -->
+                        <div class="form-group" id="formationGroup" style="display: none;">
+                            <label for="formationId">Formation *</label>
+                            <select id="formationId" name="formationId">
+                                <option value="">Chargement...</option>
+                            </select>
+                            <span class="error-message" id="formationIdError"></span>
+                        </div>
+                    </div>
+
+                    <!-- Bouton de soumission -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-check"></i>
+                            S'enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Formulaire pour visiteur avec badge existant -->
+            <div id="returningVisitorForm" class="form-container hidden">
+                <h1>
+                    <i class="fas fa-id-badge"></i>
+                    Re-entrée avec Badge Existant
+                </h1>
+                <p class="subtitle">Saisissez votre ID de badge et la raison de votre nouvelle visite</p>
+
+                <form id="returningForm" class="form">
+                    <div class="form-section">
+                        <h2>Informations de Re-entrée</h2>
+                        <div class="form-group">
+                            <label for="visitorId">ID de Badge *</label>
+                            <input type="text" id="visitorId" name="visitorId" required 
+                                   placeholder="Votre ID unique de visite précédente">
+                            <span class="error-message" id="visitorIdError"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="returnVisitReason">Raison de la visite *</label>
+                            <select id="returnVisitReason" name="returnVisitReason" required>
+                                <option value="">Sélectionnez une raison</option>
+                                <option value="MEETING">Rendez-vous avec un collaborateur</option>
+                                <option value="FORMATION">Participation à une formation</option>
+                                <option value="DELIVERY">Livraison</option>
+                                <option value="MAINTENANCE">Maintenance</option>
+                                <option value="OTHER">Autre</option>
+                            </select>
+                            <span class="error-message" id="returnVisitReasonError"></span>
+                        </div>
+
+                        <!-- Champs conditionnels pour staff/formation -->
+                        <div id="returnStaffSection" class="form-group hidden">
+                            <label for="returnStaffId">Collaborateur à rencontrer</label>
+                            <select id="returnStaffId" name="returnStaffId">
+                                <option value="">Chargement...</option>
+                            </select>
+                        </div>
+
+                        <div id="returnFormationSection" class="form-group hidden">
+                            <label for="returnFormationId">Formation</label>
+                            <select id="returnFormationId" name="returnFormationId">
+                                <option value="">Chargement...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="returnSubmitBtn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Confirmer la Re-entrée
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Résultat de l'enregistrement -->
+            <div id="successResult" class="result-container hidden">
+                <div class="success-card">
+                    <i class="fas fa-check-circle"></i>
+                    <h2>Enregistrement Réussi !</h2>
+                    <p>Bienvenue chez GooseCorp</p>
+                    <div class="visitor-info">
+                        <p><strong>Nom :</strong> <span id="resultName"></span></p>
+                        <p><strong>Email :</strong> <span id="resultEmail"></span></p>
+                        <p><strong>Heure d'arrivée :</strong> <span id="resultTime"></span></p>
+                        <div class="unique-id">
+                            <p><strong>Votre ID de visite :</strong></p>
+                            <div class="id-display" id="resultId"></div>
+                            <p class="id-note">⚠️ Conservez cet ID pour votre sortie</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-plus"></i>
+                        Nouvel Enregistrement
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Messages de notification -->
+    <div id="notifications" class="notifications"></div>
+
+    <!-- Scripts -->
+    <script src="src/api.js"></script>
+    <script src="src/utils.js"></script>
+    <script src="src/entry.js"></script>
+    <script src="src/checkin.js"></script>
+    
+    <script>
+        // Initialisation une fois que tout est chargé
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Initialisation de la page d\'entrée...');
+            
+            // Initialiser les boutons de choix d'entrée
+            initEntryChoice();
+            
+            // Initialiser le formulaire de re-entrée
+            initReturningVisitorForm();
+            
+            console.log('Page d\'entrée initialisée avec succès');
+        });
+    </script>
+</body>
 </html>
