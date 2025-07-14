@@ -20,6 +20,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             initReturningVisitorForm();
         }
         
+        // Initialiser la page d'entrée (charge les données staff/formations)
+        if (typeof initializeCheckinPage === 'function') {
+            await initializeCheckinPage();
+        }
+        
         console.log('✅ GooseCorp Frontend initialisé avec succès');
         
         // Vérifier la connexion à l'API
