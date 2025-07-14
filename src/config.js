@@ -15,7 +15,7 @@ const DEFAULT_CONFIG = {
 
 // Configuration de production (URL du backend Railway)
 const PRODUCTION_CONFIG = {
-    API_BASE_URL: 'https://goosecorporationbck-production.up.railway.app/api',
+    API_BASE_URL: '/api', // Utilise le proxy Netlify
     TIMEOUT: 15000,
     MAX_RETRIES: 3,
     RETRY_DELAY: 2000,

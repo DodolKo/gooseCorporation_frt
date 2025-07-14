@@ -15,6 +15,13 @@
   to = "/index.html"
   status = 200
 
+# Proxy pour contourner le CSP - redirige les appels API vers le backend
+[[redirects]]
+  from = "/api/*"
+  to = "https://goosecorporationbck-production.up.railway.app/api/:splat"
+  status = 200
+  force = true
+
 # Headers de sécurité
 [[headers]]
   for = "/*"
