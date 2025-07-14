@@ -19,7 +19,7 @@ const API_CONFIG = {
     MAX_RETRIES: 3,
     RETRY_DELAY: 1000,
     CACHE_DURATION: 5 * 60 * 1000, // 5 minutes en millisecondes
-    DEMO_MODE: false // Mode démo pour test de la nouvelle fonctionnalité
+    DEMO_MODE: false // Mode normal - backend connecté
 };
 
 // ====================================
@@ -403,16 +403,21 @@ class VisitorService {
         try {
             const { visitorId, visitReason, staffId, formationId } = reentryData;
             
-            console.log('Re-entrée du visiteur:', { visitorId, visitReason, staffId, formationId });
+            console.log('🔄 Début re-entrée du visiteur:', { visitorId, visitReason, staffId, formationId });
             
-            // Endpoint pour la re-entrée (à implémenter côté backend)
-            const response = await apiClient.post(`/visitors/${visitorId}/reentry`, {
+            // Endpoint pour la re-entrée
+            const endpoint = `/visitors/${visitorId}/reentry`;
+            const payload = {
                 visitReason,
                 staffId: staffId ? parseInt(staffId) : undefined,
                 formationId: formationId ? parseInt(formationId) : undefined
-            });
+            };
             
-            console.log('Re-entrée enregistrée avec succès:', response);
+            console.log('📡 Appel API:', { endpoint, payload });
+            
+            const response = await apiClient.post(endpoint, payload);
+            
+            console.log('✅ Re-entrée enregistrée avec succès:', response);
             
             return response;
         } catch (error) {

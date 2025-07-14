@@ -328,9 +328,18 @@ function clearFieldError(fieldId) {
 }
 
 /**
- * Fonction pour afficher les notifications (doit être définie ailleurs)
+ * Instance du système de notifications
+ */
+let notificationSystem = null;
+
+/**
+ * Fonction pour afficher les notifications
  */
 function showNotification(message, type) {
-    // Cette fonction doit être implémentée dans utils.js ou dans le fichier principal
-    console.log(`[${type.toUpperCase()}] ${message}`);
+    if (!notificationSystem) {
+        // Initialiser le système de notifications si pas encore fait
+        notificationSystem = new NotificationSystem();
+    }
+    
+    notificationSystem.show(message, type);
 } 
