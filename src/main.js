@@ -15,14 +15,19 @@ document.addEventListener('DOMContentLoaded', async function() {
             initEntryChoice();
         }
         
+        // Initialiser la page d'entrée (charge les données staff/formations)
+        if (typeof initializeCheckinPage === 'function') {
+            await initializeCheckinPage();
+        }
+        
         // Initialiser le formulaire de re-entrée
         if (typeof initReturningVisitorForm === 'function') {
             initReturningVisitorForm();
         }
         
-        // Initialiser la page d'entrée (charge les données staff/formations)
-        if (typeof initializeCheckinPage === 'function') {
-            await initializeCheckinPage();
+        // Charger les données pour le formulaire de re-entrée
+        if (typeof loadReturnFormData === 'function') {
+            await loadReturnFormData();
         }
         
         console.log('✅ GooseCorp Frontend initialisé avec succès');
