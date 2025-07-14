@@ -13,13 +13,15 @@
 // CONFIGURATION DE BASE
 // ====================================
 
+import CONFIG from './config.js';
+
 const API_CONFIG = {
-    BASE_URL: 'http://localhost:3000/api',
-    TIMEOUT: 10000,
-    MAX_RETRIES: 3,
-    RETRY_DELAY: 1000,
-    CACHE_DURATION: 5 * 60 * 1000, // 5 minutes en millisecondes
-    DEMO_MODE: false // Mode normal - backend connecté
+    BASE_URL: CONFIG.API_BASE_URL,
+    TIMEOUT: CONFIG.TIMEOUT,
+    MAX_RETRIES: CONFIG.MAX_RETRIES,
+    RETRY_DELAY: CONFIG.RETRY_DELAY,
+    CACHE_DURATION: CONFIG.CACHE_DURATION,
+    DEMO_MODE: CONFIG.DEMO_MODE
 };
 
 // ====================================

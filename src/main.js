@@ -1,24 +1,34 @@
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+// Import des modules ES6
+import './style.css';
+import './api.js';
+import './utils.js';
+import './entry.js';
+import './checkin.js';
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
+// Initialisation de l'application GooseCorp
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Initialisation de GooseCorp Frontend...');
+    
+    try {
+        // Initialiser les boutons de choix d'entrée
+        if (typeof initEntryChoice === 'function') {
+            initEntryChoice();
+        }
+        
+        // Initialiser le formulaire de re-entrée
+        if (typeof initReturningVisitorForm === 'function') {
+            initReturningVisitorForm();
+        }
+        
+        console.log('✅ GooseCorp Frontend initialisé avec succès');
+        
+        // Vérifier la connexion à l'API
+        console.log('🔗 Vérification de la connexion API...');
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de l\'initialisation:', error);
+    }
+});
 
-setupCounter(document.querySelector('#counter'))
+// Export pour compatibilité
+export default {};

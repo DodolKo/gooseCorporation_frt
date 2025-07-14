@@ -223,24 +223,6 @@
     <div id="notifications" class="notifications"></div>
 
     <!-- Scripts -->
-    <script src="src/api.js"></script>
-    <script src="src/utils.js"></script>
-    <script src="src/entry.js"></script>
-    <script src="src/checkin.js"></script>
-    
-    <script>
-        // Initialisation une fois que tout est chargé
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Initialisation de la page d\'entrée...');
-            
-            // Initialiser les boutons de choix d'entrée
-            initEntryChoice();
-            
-            // Initialiser le formulaire de re-entrée
-            initReturningVisitorForm();
-            
-            console.log('Page d\'entrée initialisée avec succès');
-        });
-    </script>
+    <script type="module" src="src/main.js"></script>
 </body>
 </html>
