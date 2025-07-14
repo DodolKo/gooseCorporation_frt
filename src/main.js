@@ -6,8 +6,23 @@ import './entry.js';
 import './checkin.js';
 import './diagnostics.js';
 
+// Attendre que les services soient disponibles sur window
+async function waitForGlobals() {
+    let tries = 0;
+    while ((!window.PublicDataService || !window.CONFIG) && tries < 20) {
+        await new Promise(r => setTimeout(r, 100));
+        tries++;
+    }
+    if (!window.PublicDataService || !window.CONFIG) {
+        console.error('❌ Les services globaux ne sont pas disponibles après attente.');
+    } else {
+        console.log('✅ Services globaux disponibles.');
+    }
+}
+
 // Initialisation de l'application GooseCorp
 document.addEventListener('DOMContentLoaded', async function() {
+    await waitForGlobals();
     console.log('🚀 Initialisation de GooseCorp Frontend...');
     
     try {
