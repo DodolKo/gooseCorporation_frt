@@ -649,5 +649,6 @@ window.PublicDataService = PublicDataService;
 window.VisitorService = VisitorService;
 window.apiCache = apiCache;
 window.API_CONFIG = API_CONFIG;
+window.CONFIG = API_CONFIG; // Ajouter CONFIG pour compatibilité
 
 console.log('🚀 Services API GooseCorp initialisés'); 
