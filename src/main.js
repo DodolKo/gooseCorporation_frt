@@ -1,5 +1,5 @@
 // Import des modules ES6
-import './style.css';
+// import './style.css';
 import './api.js';
 import './utils.js';
 import './entry.js';
