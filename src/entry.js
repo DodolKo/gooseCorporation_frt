@@ -277,13 +277,13 @@ function resetAllForms() {
     if (returnForm) returnForm.reset();
     
     // Masquer les sections conditionnelles
-    const staffSection = document.getElementById('staffSection');
-    const formationSection = document.getElementById('formationSection');
+    const staffGroup = document.getElementById('staffGroup');
+    const formationGroup = document.getElementById('formationGroup');
     const returnStaffSection = document.getElementById('returnStaffSection');
     const returnFormationSection = document.getElementById('returnFormationSection');
     
-    if (staffSection) staffSection.classList.add('hidden');
-    if (formationSection) formationSection.classList.add('hidden');
+    if (staffGroup) staffGroup.classList.add('hidden');
+    if (formationGroup) formationGroup.classList.add('hidden');
     if (returnStaffSection) returnStaffSection.classList.add('hidden');
     if (returnFormationSection) returnFormationSection.classList.add('hidden');
     
@@ -342,4 +342,21 @@ function showNotification(message, type) {
     }
     
     notificationSystem.show(message, type);
-} 
+}
+
+// ====================================
+// EXPORT DES FONCTIONS GLOBALES
+// ====================================
+
+// Rendre les fonctions disponibles globalement
+window.initEntryChoice = initEntryChoice;
+window.loadReturnFormData = loadReturnFormData;
+window.initReturningVisitorForm = initReturningVisitorForm;
+window.handleReturningFormSubmit = handleReturningFormSubmit;
+window.resetAllForms = resetAllForms;
+window.resetForm = resetForm;
+window.showFieldError = showFieldError;
+window.clearFieldError = clearFieldError;
+window.showNotification = showNotification;
+
+console.log('🎯 Fonctions Entry.js exportées globalement'); 
