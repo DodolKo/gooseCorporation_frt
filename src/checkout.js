@@ -93,12 +93,12 @@ function setupFormEvents() {
 
 /**
  * Vérifie le statut d'un visiteur avant le checkout
- * @param {string} visitorId - ID du visiteur à vérifier
+ * @param {string} badgeId - ID du badge à vérifier
  * @returns {Object} Statut du visiteur
  */
-async function checkVisitorStatusForCheckout(visitorId) {
+async function checkVisitorStatusForCheckout(badgeId) {
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/badges/verify/${visitorId}`);
+        const response = await fetch(`${CONFIG.API_BASE_URL}/badges/verify/${badgeId}`);
         
         if (response.status === 404) {
             return { exists: false, error: 'Badge non trouvé' };
@@ -215,10 +215,10 @@ function handleVisitorIdCheck() {
         
         clearTimeout(checkTimeout);
         
-        const visitorId = visitorIdField.value.trim();
-        if (visitorId.length >= 10) { // Minimum length for a valid ID
+        const badgeId = visitorIdField.value.trim();
+        if (badgeId.length >= 5) { // Minimum length for a valid badge ID
             checkTimeout = setTimeout(async () => {
-                const status = await checkVisitorStatusForCheckout(visitorId);
+                const status = await checkVisitorStatusForCheckout(badgeId);
                 
                 if (status.exists) {
                     displayVisitorInfoForCheckout(status.visitor);
@@ -270,41 +270,38 @@ async function handleCheckoutFormSubmit(e) {
         
         // Récupérer les données du formulaire
         const formData = new FormData(e.target);
-        const visitorId = formData.get('visitorId');
+        const badgeId = formData.get('visitorId'); // Le champ s'appelle visitorId mais contient un badgeId
         
         // Validation de base
-        if (!visitorId || visitorId.trim().length < 10) {
-            notifications.show('Veuillez saisir un ID de visite valide', 'error');
+        if (!badgeId || badgeId.trim().length < 5) {
+            notifications.show('Veuillez saisir un ID de badge valide', 'error');
             return;
         }
         
         // Vérifier le statut du visiteur avant de procéder au checkout
-        const visitorStatus = await checkVisitorStatusForCheckout(visitorId);
+        const visitorStatus = await checkVisitorStatusForCheckout(badgeId);
         
         if (!visitorStatus.exists) {
             notifications.show('Badge non trouvé. Veuillez vérifier votre ID.', 'error');
             return;
         }
         
-        if (visitorStatus.visitor.status === 'OUTSIDE') {
+        if (!visitorStatus.canCheckout) {
             notifications.show('Ce visiteur est déjà sorti du bâtiment !', 'warning');
             displayCheckoutAlreadyOut(visitorStatus.visitor);
             return;
         }
         
-        // Procéder au checkout
-        const result = await submitCheckout(visitorId);
+        // Procéder au checkout via VisitorService
+        const result = await VisitorService.checkoutVisitor(badgeId);
         
-        if (result.success) {
-            displayCheckoutSuccess(result.visitor);
-            notifications.show('Sortie enregistrée avec succès !', 'success');
-        } else {
-            notifications.show(result.error || 'Erreur lors de la sortie', 'error');
-        }
+        // VisitorService retourne directement les données ou lance une exception
+        displayCheckoutSuccess(result.visitor);
+        notifications.show('Sortie enregistrée avec succès !', 'success');
         
     } catch (error) {
         console.error('❌ Erreur lors de la soumission:', error);
-        notifications.show('Erreur lors de la sortie', 'error');
+        notifications.show(error.message || 'Erreur lors de la sortie', 'error');
     } finally {
         isFormSubmitting = false;
         DOMUtils.toggleButton('#submitBtn', true);
@@ -527,9 +524,9 @@ function validateFormData(data) {
     const errors = {};
     
     // Validation de l'ID visiteur
-    const visitorIdValidation = FormValidator.validateVisitorId(data.visitorId);
-    if (!visitorIdValidation.valid) {
-        errors.visitorId = visitorIdValidation.message;
+    const badgeIdValidation = FormValidator.validateVisitorId(data.visitorId);
+    if (!badgeIdValidation.valid) {
+        errors.visitorId = badgeIdValidation.message;
     }
     
     return errors;
@@ -634,30 +631,31 @@ function hideApiStatus() {
 // ====================================
 
 /**
- * Vérifie si un ID visiteur a un format valide
- * @param {string} visitorId - ID à vérifier
+ * Vérifie si un ID badge a un format valide
+ * @param {string} badgeId - ID badge à vérifier
  * @returns {boolean} True si le format semble valide
  */
-function isValidVisitorIdFormat(visitorId) {
-    // Format attendu : clx suivi de caractères alphanumériques
-    const idPattern = /^clx[a-zA-Z0-9]{10,}$/;
-    return idPattern.test(visitorId);
+function isValidVisitorIdFormat(badgeId) {
+    // Format attendu : GC-YYYY-XXX (ex: GC-2024-001)
+    const idPattern = /^GC-\d{4}-\d{3}$/;
+    return idPattern.test(badgeId);
 }
 
 /**
- * Suggère des corrections pour un ID visiteur mal formaté
- * @param {string} visitorId - ID mal formaté
+ * Suggère des corrections pour un ID badge mal formaté
+ * @param {string} badgeId - ID badge mal formaté
  * @returns {string} Suggestion de correction
  */
-function suggestIdCorrection(visitorId) {
-    if (!visitorId) return '';
+function suggestIdCorrection(badgeId) {
+    if (!badgeId) return '';
     
-    // Supprimer les espaces et caractères spéciaux
-    let cleaned = visitorId.replace(/[^a-zA-Z0-9]/g, '');
+    // Supprimer les espaces et normaliser
+    let cleaned = badgeId.replace(/\s+/g, '').toUpperCase();
     
-    // Ajouter le préfixe clx s'il manque
-    if (!cleaned.startsWith('clx')) {
-        cleaned = 'clx' + cleaned;
+    // Essayer de détecter le format GC-YYYY-XXX
+    const match = cleaned.match(/GC.?(\d{4}).?(\d{3})/);
+    if (match) {
+        return `GC-${match[1]}-${match[2]}`;
     }
     
     return cleaned;
