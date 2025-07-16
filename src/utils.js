@@ -509,6 +509,7 @@ class ErrorHandler {
 // ====================================
 
 // Rendre les utilitaires disponibles globalement
+window.NotificationSystem = NotificationSystem;
 window.notifications = notifications;
 window.FormValidator = FormValidator;
 window.DateFormatter = DateFormatter;

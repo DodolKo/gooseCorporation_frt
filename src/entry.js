@@ -81,6 +81,253 @@ async function loadReturnFormData() {
 }
 
 /**
+ * Vérifie le statut d'un visiteur avec un badge existant
+ * @param {string} visitorId - ID du visiteur à vérifier
+ * @returns {Object} Statut du visiteur
+ */
+async function checkVisitorStatus(visitorId) {
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/visitors/${visitorId}/status`);
+        
+        if (response.status === 404) {
+            return { exists: false, error: 'Visiteur non trouvé' };
+        }
+        
+        if (!response.ok) {
+            throw new Error('Erreur lors de la vérification du statut');
+        }
+        
+        const data = await response.json();
+        return data;
+        
+    } catch (error) {
+        console.error('Erreur lors de la vérification du statut:', error);
+        return { exists: false, error: 'Erreur de connexion' };
+    }
+}
+
+/**
+ * Affiche le statut actuel d'un visiteur
+ * @param {Object} visitor - Données du visiteur
+ */
+function displayVisitorStatus(visitor) {
+    const statusContainer = document.getElementById('visitorStatusContainer') || createStatusContainer();
+    
+    let statusHtml = `
+        <div class="visitor-status ${visitor.status === 'INSIDE' ? 'status-inside' : 'status-outside'}">
+            <div class="status-header">
+                <h3><i class="fas fa-user-check"></i> Statut du Badge</h3>
+                <span class="status-badge status-${visitor.status.toLowerCase()}">
+                    ${visitor.status === 'INSIDE' ? 'Dans le bâtiment' : 'Sorti du bâtiment'}
+                </span>
+            </div>
+            <div class="status-content">
+                <div class="visitor-info">
+                    <p><strong>Nom:</strong> ${visitor.firstName} ${visitor.lastName}</p>
+                    <p><strong>Email:</strong> ${visitor.email}</p>
+                    <p><strong>ID Badge:</strong> ${visitor.uniqueId}</p>
+                    <p><strong>Dernière entrée:</strong> ${new Date(visitor.checkInTime).toLocaleString('fr-FR')}</p>
+                    ${visitor.checkOutTime ? `<p><strong>Dernière sortie:</strong> ${new Date(visitor.checkOutTime).toLocaleString('fr-FR')}</p>` : ''}
+                    ${visitor.visitDuration ? `<p><strong>Durée de visite actuelle:</strong> ${visitor.visitDuration}</p>` : ''}
+                </div>
+                <div class="status-actions">
+                    ${visitor.status === 'INSIDE' ? 
+                        `<p class="status-message inside">
+                            <i class="fas fa-info-circle"></i>
+                            Ce visiteur est actuellement dans le bâtiment. 
+                            Une nouvelle entrée n'est pas nécessaire.
+                        </p>` : 
+                        `<p class="status-message outside">
+                            <i class="fas fa-check-circle"></i>
+                            Ce visiteur peut effectuer une nouvelle entrée.
+                        </p>`
+                    }
+                </div>
+            </div>
+        </div>
+    `;
+    
+    statusContainer.innerHTML = statusHtml;
+    statusContainer.classList.remove('hidden');
+}
+
+/**
+ * Crée le conteneur pour afficher le statut du visiteur
+ * @returns {Element} Conteneur créé
+ */
+function createStatusContainer() {
+    const container = document.createElement('div');
+    container.id = 'visitorStatusContainer';
+    container.className = 'visitor-status-container';
+    
+    const form = document.getElementById('returningVisitorForm');
+    form.insertBefore(container, form.querySelector('.form-actions'));
+    
+    return container;
+}
+
+/**
+ * Gère la vérification du statut lors de la saisie de l'ID
+ */
+function handleVisitorIdCheck() {
+    const visitorIdField = document.getElementById('visitorId');
+    let checkTimeout;
+    
+    visitorIdField.addEventListener('input', () => {
+        const statusContainer = document.getElementById('visitorStatusContainer');
+        if (statusContainer) {
+            statusContainer.classList.add('hidden');
+        }
+        
+        clearTimeout(checkTimeout);
+        
+        const visitorId = visitorIdField.value.trim();
+        if (visitorId.length >= 10) { // Minimum length for a valid ID
+            checkTimeout = setTimeout(async () => {
+                const status = await checkVisitorStatus(visitorId);
+                
+                if (status.exists) {
+                    displayVisitorStatus(status.visitor);
+                } else {
+                    const statusContainer = document.getElementById('visitorStatusContainer');
+                    if (statusContainer) {
+                        statusContainer.innerHTML = `
+                            <div class="visitor-status status-error">
+                                <p class="status-message error">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    ${status.error || 'Badge non trouvé'}
+                                </p>
+                            </div>
+                        `;
+                        statusContainer.classList.remove('hidden');
+                    }
+                }
+            }, 1000); // Attendre 1 seconde après la saisie
+        }
+    });
+}
+
+/**
+ * Valide le formulaire de re-entrée
+ * @returns {boolean} True si le formulaire est valide
+ */
+function validateReturnForm() {
+    const visitorId = document.getElementById('visitorId').value.trim();
+    const visitReason = document.getElementById('returnVisitReason').value;
+    const staffId = document.getElementById('returnStaffId').value;
+    const formationId = document.getElementById('returnFormationId').value;
+    
+    let isValid = true;
+    
+    // Validation de l'ID visiteur
+    if (!visitorId || visitorId.length < 10) {
+        showFieldError('visitorId', 'ID de badge invalide');
+        isValid = false;
+    } else {
+        clearFieldError('visitorId');
+    }
+    
+    // Validation de la raison de visite
+    if (!visitReason) {
+        showFieldError('returnVisitReason', 'La raison de la visite est requise');
+        isValid = false;
+    } else {
+        clearFieldError('returnVisitReason');
+    }
+    
+    // Validation conditionnelle
+    if (visitReason === 'MEETING' && !staffId) {
+        showFieldError('returnStaffId', 'Sélectionnez un collaborateur pour un rendez-vous');
+        isValid = false;
+    } else {
+        clearFieldError('returnStaffId');
+    }
+    
+    if (visitReason === 'FORMATION' && !formationId) {
+        showFieldError('returnFormationId', 'Sélectionnez une formation');
+        isValid = false;
+    } else {
+        clearFieldError('returnFormationId');
+    }
+    
+    return isValid;
+}
+
+/**
+ * Soumet les données de re-entrée
+ * @param {string} visitorId - ID du visiteur
+ * @param {Object} data - Données de re-entrée
+ * @returns {Object} Résultat de la soumission
+ */
+async function submitReturnVisitor(visitorId, data) {
+    try {
+        const reentryData = {
+            visitorId: visitorId,
+            visitReason: data.visitReason,
+            staffId: data.staffId,
+            formationId: data.formationId
+        };
+        
+        const result = await VisitorService.reenterVisitor(reentryData);
+        return { success: true, visitor: result.visitor || result };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Gère la soumission du formulaire de re-entrée
+ * @param {Event} event - Événement de soumission
+ */
+async function handleReturningFormSubmit(event) {
+    event.preventDefault();
+    
+    try {
+        // Validation du formulaire
+        if (!validateReturnForm()) {
+            return;
+        }
+        
+        const formData = new FormData(event.target);
+        const visitorId = formData.get('visitorId');
+        
+        // Vérifier le statut du visiteur avant de soumettre
+        const status = await checkVisitorStatus(visitorId);
+        
+        if (!status.exists) {
+            showNotification('Badge non trouvé. Veuillez vérifier votre ID.', 'error');
+            return;
+        }
+        
+        if (status.visitor.status === 'INSIDE') {
+            showNotification('Vous êtes déjà dans le bâtiment !', 'warning');
+            return;
+        }
+        
+        // Préparer les données pour la re-entrée
+        const reentryData = {
+            visitReason: formData.get('returnVisitReason'),
+            staffId: formData.get('returnStaffId') || null,
+            formationId: formData.get('returnFormationId') || null
+        };
+        
+        // Soumettre la re-entrée
+        const result = await submitReturnVisitor(visitorId, reentryData);
+        
+        if (result.success) {
+            showNotification('Re-entrée enregistrée avec succès !', 'success');
+            showSuccessResult(result.visitor, true);
+        } else {
+            showNotification(result.error || 'Erreur lors de la re-entrée', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Erreur lors de la re-entrée:', error);
+        showNotification(error.message || 'Erreur lors de la re-entrée', 'error');
+    }
+}
+
+/**
  * Gère les champs conditionnels du formulaire de re-entrée
  */
 function handleReturnVisitReasonChange() {
@@ -417,10 +664,42 @@ let notificationSystem = null;
 function showNotification(message, type) {
     if (!notificationSystem) {
         // Initialiser le système de notifications si pas encore fait
-        notificationSystem = new NotificationSystem();
+        if (typeof NotificationSystem !== 'undefined') {
+            notificationSystem = new NotificationSystem();
+        } else {
+            // Fallback si NotificationSystem n'est pas disponible
+            console.log(`[NOTIFICATION ${type.toUpperCase()}]: ${message}`);
+            
+            // Essayer d'utiliser le système de notification global
+            if (window.notifications && typeof window.notifications.show === 'function') {
+                window.notifications.show(message, type);
+                return;
+            }
+            
+            // Dernier recours : alert
+            alert(`${type.toUpperCase()}: ${message}`);
+            return;
+        }
     }
     
     notificationSystem.show(message, type);
+}
+
+/**
+ * Initialise le formulaire de re-entrée
+ */
+function initReturningVisitorForm() {
+    const form = document.getElementById('returningForm');
+    if (!form) return;
+    
+    // Gérer les champs conditionnels
+    handleReturnVisitReasonChange();
+    
+    // Gérer la vérification du statut du visiteur
+    handleVisitorIdCheck();
+    
+    // Gestion de la soumission du formulaire
+    form.addEventListener('submit', handleReturningFormSubmit);
 }
 
 // ====================================

@@ -385,8 +385,89 @@ function displaySuccessResult(visitor) {
     DOMUtils.updateContent('#resultTime', DateFormatter.formatDateTime(visitor.checkInTime));
     DOMUtils.updateContent('#resultId', visitor.uniqueId);
     
+    // Afficher la raison de visite
+    const visitReasonDisplay = getVisitReasonDisplay(visitor.visitReason, visitor.staff, visitor.formation);
+    DOMUtils.updateContent('#resultReason', visitReasonDisplay);
+    
+    // Générer le QR code avec l'ID unique du visiteur
+    generateQRCode(visitor.uniqueId);
+    
     // Faire défiler vers le résultat
     document.getElementById('successResult').scrollIntoView({ behavior: 'smooth' });
+}
+
+/**
+ * Génère un QR code avec l'ID unique du visiteur
+ * @param {string} uniqueId - ID unique du visiteur
+ */
+function generateQRCode(uniqueId) {
+    const qrContainer = document.getElementById('qrCodeContainer');
+    if (!qrContainer) {
+        console.error('❌ Conteneur QR code non trouvé');
+        return;
+    }
+    
+    // Vider le conteneur
+    qrContainer.innerHTML = '';
+    
+    try {
+        // Vérifier si QRCode est disponible
+        if (typeof QRCode === 'undefined') {
+            console.error('❌ Bibliothèque QRCode non disponible');
+            qrContainer.innerHTML = '<p class="error">⚠️ Impossible de générer le QR code</p>';
+            return;
+        }
+        
+        // Créer le QR code avec l'ID unique
+        const qrCode = new QRCode(qrContainer, {
+            text: uniqueId,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+        });
+        
+        console.log('✅ QR code généré avec succès pour l\'ID:', uniqueId);
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de la génération du QR code:', error);
+        qrContainer.innerHTML = '<p class="error">⚠️ Erreur lors de la génération du QR code</p>';
+    }
+}
+
+/**
+ * Formate l'affichage de la raison de visite
+ * @param {string} visitReason - Raison de la visite
+ * @param {Object} staff - Données du personnel (si applicable)
+ * @param {Object} formation - Données de la formation (si applicable)
+ * @returns {string} Raison formatée
+ */
+function getVisitReasonDisplay(visitReason, staff, formation) {
+    const reasons = {
+        'MEETING': 'Rendez-vous',
+        'FORMATION': 'Formation',
+        'DELIVERY': 'Livraison', 
+        'MAINTENANCE': 'Maintenance',
+        'OTHER': 'Autre'
+    };
+    
+    let display = reasons[visitReason] || visitReason;
+    
+    // Ajouter les détails si disponibles
+    if (visitReason === 'MEETING' && staff) {
+        display += ` avec ${staff.firstName} ${staff.lastName}`;
+        if (staff.department) {
+            display += ` (${staff.department})`;
+        }
+    } else if (visitReason === 'FORMATION' && formation) {
+        display += ` : ${formation.name}`;
+        if (formation.location) {
+            display += ` - ${formation.location}`;
+        }
+    }
+    
+    return display;
 }
 
 /**

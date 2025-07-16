@@ -1,5 +1,4 @@
 // Import des modules ES6 pour la page checkout
-import './style.css';
 import './api.js';
 import './utils.js';
 import './checkout.js';
@@ -9,9 +8,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Initialisation de la page de sortie...');
     
     try {
-        // Initialiser le formulaire de sortie
-        if (typeof initCheckoutForm === 'function') {
-            initCheckoutForm();
+        // Initialiser la page de sortie
+        if (typeof initializeCheckoutPage === 'function') {
+            await initializeCheckoutPage();
         }
         
         console.log('✅ Page de sortie initialisée avec succès');
