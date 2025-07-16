@@ -304,22 +304,11 @@ async function handleCheckoutFormSubmit(e) {
 /**
  * Soumet la demande de checkout
  */
-async function submitCheckout(visitorId) {
+async function submitCheckout(uniqueId) {
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/visitors/${visitorId}/checkout`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Erreur lors du checkout');
-        }
-        
-        const data = await response.json();
-        return { success: true, visitor: data.visitor };
+        // Utiliser VisitorService pour le checkout avec uniqueId
+        const result = await VisitorService.checkoutVisitor(uniqueId);
+        return { success: true, visitor: result.visitor };
         
     } catch (error) {
         console.error('Erreur lors du checkout:', error);
