@@ -52,30 +52,70 @@ function initEntryChoice() {
  */
 async function loadReturnFormData() {
     try {
+        console.log('📥 Chargement des données pour le formulaire de re-entrée...');
         const data = await PublicDataService.loadAllPublicData();
+        
+        console.log('Données reçues:', data);
+        console.log('Personnel:', data.staff);
+        console.log('Formations:', data.formations);
         
         // Remplir les select pour staff
         const returnStaffSelect = document.getElementById('returnStaffId');
-        returnStaffSelect.innerHTML = '<option value="">Sélectionnez un collaborateur</option>';
-        data.staff.forEach(member => {
-            const option = document.createElement('option');
-            option.value = member.id;
-            option.textContent = `${member.firstName} ${member.lastName} - ${member.department}`;
-            returnStaffSelect.appendChild(option);
-        });
+        if (returnStaffSelect) {
+            returnStaffSelect.innerHTML = '<option value="">Sélectionnez un collaborateur</option>';
+            
+            if (data.staff && data.staff.length > 0) {
+                data.staff.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member.id;
+                    option.textContent = `${member.firstName} ${member.lastName} - ${member.department || 'N/A'}`;
+                    returnStaffSelect.appendChild(option);
+                });
+                console.log(`✅ ${data.staff.length} membres du personnel chargés dans le formulaire de re-entrée`);
+            } else {
+                console.warn('⚠️ Aucun membre du personnel trouvé');
+                returnStaffSelect.innerHTML = '<option value="">Aucun personnel disponible</option>';
+            }
+        } else {
+            console.error('❌ Élément returnStaffId non trouvé');
+        }
 
         // Remplir les select pour formations
         const returnFormationSelect = document.getElementById('returnFormationId');
-        returnFormationSelect.innerHTML = '<option value="">Sélectionnez une formation</option>';
-        data.formations.forEach(formation => {
-            const option = document.createElement('option');
-            option.value = formation.id;
-            option.textContent = `${formation.name} - ${new Date(formation.startDate).toLocaleDateString()}`;
-            returnFormationSelect.appendChild(option);
-        });
+        if (returnFormationSelect) {
+            returnFormationSelect.innerHTML = '<option value="">Sélectionnez une formation</option>';
+            
+            if (data.formations && data.formations.length > 0) {
+                data.formations.forEach(formation => {
+                    const option = document.createElement('option');
+                    option.value = formation.id;
+                    option.textContent = `${formation.name} - ${new Date(formation.startDate).toLocaleDateString()}`;
+                    returnFormationSelect.appendChild(option);
+                });
+                console.log(`✅ ${data.formations.length} formations chargées dans le formulaire de re-entrée`);
+            } else {
+                console.warn('⚠️ Aucune formation trouvée');
+                returnFormationSelect.innerHTML = '<option value="">Aucune formation disponible</option>';
+            }
+        } else {
+            console.error('❌ Élément returnFormationId non trouvé');
+        }
 
     } catch (error) {
-        console.error('Erreur lors du chargement des données pour re-entrée:', error);
+        console.error('❌ Erreur lors du chargement des données pour re-entrée:', error);
+        
+        // Afficher des messages d'erreur dans les selects
+        const returnStaffSelect = document.getElementById('returnStaffId');
+        const returnFormationSelect = document.getElementById('returnFormationId');
+        
+        if (returnStaffSelect) {
+            returnStaffSelect.innerHTML = '<option value="">Erreur de chargement du personnel</option>';
+        }
+        
+        if (returnFormationSelect) {
+            returnFormationSelect.innerHTML = '<option value="">Erreur de chargement des formations</option>';
+        }
+        
         showNotification('Erreur lors du chargement des données', 'error');
     }
 }
