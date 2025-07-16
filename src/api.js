@@ -550,11 +550,11 @@ class VisitorService {
      * @param {string} visitorId - ID unique du visiteur
      * @returns {Promise<Object>} Données de la sortie
      */
-    static async checkoutVisitor(badgeId) {
+    static async checkoutVisitor(uniqueId) {
         try {
-            console.log('Checkout du visiteur avec badgeId:', badgeId);
+            console.log('Checkout du visiteur avec uniqueId:', uniqueId);
             
-            const response = await apiClient.post(`/visitors/checkout/badge/${badgeId}`);
+            const response = await apiClient.post(`/visitors/checkout/unique/${uniqueId}`);
             
             console.log('Sortie enregistrée avec succès:', response);
             
@@ -564,10 +564,10 @@ class VisitorService {
             
             if (API_CONFIG.DEMO_MODE) {
                 // Simuler la sortie avec des données de test
-                if (badgeId.startsWith('demo_') || badgeId.startsWith('GC-')) {
+                if (uniqueId.startsWith('demo_') || uniqueId.startsWith('clx')) {
                     const demoVisitor = {
                         id: Math.floor(Math.random() * 1000),
-                        uniqueId: badgeId,
+                        uniqueId: uniqueId,
                         firstName: 'Demo',
                         lastName: 'User',
                         email: 'demo@example.com',
