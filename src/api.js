@@ -458,7 +458,7 @@ class VisitorService {
             
             // Gestion des erreurs spécifiques du backend réel
             if (error.message.includes('404') || error.status === 404) {
-                throw new Error('ID de visiteur non trouvé. Vérifiez votre ID de badge.');
+                throw new Error('ID de visiteur non trouvé. Vérifiez votre ID.');
             } else if (error.message.includes('400') || error.status === 400) {
                 throw new Error('Données invalides. Vérifiez vos informations.');
             } else if (error.message.includes('déjà présent') || error.message.includes('already inside')) {

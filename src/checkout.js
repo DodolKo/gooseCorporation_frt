@@ -151,7 +151,7 @@ function displayVisitorInfoForCheckout(visitor) {
                 <div class="visitor-details">
                     <p><strong>Nom:</strong> ${visitor.firstName} ${visitor.lastName}</p>
                     <p><strong>Email:</strong> ${visitor.email}</p>
-                    <p><strong>ID Badge:</strong> ${visitor.badge?.badgeId || 'Non attribué'}</p>
+                    <p><strong>ID Visiteur:</strong> ${visitor.uniqueId}</p>
                     <p><strong>Entrée:</strong> ${new Date(visitor.checkInTime).toLocaleString('fr-FR')}</p>
                     ${visitor.checkOutTime ? `<p><strong>Sortie:</strong> ${new Date(visitor.checkOutTime).toLocaleString('fr-FR')}</p>` : ''}
                     <p><strong>Durée de visite:</strong> ${visitDuration}</p>
@@ -222,7 +222,7 @@ function handleVisitorIdCheck() {
                             <div class="visitor-checkout-info status-error">
                                 <div class="alert alert-danger">
                                     <i class="fas fa-exclamation-triangle"></i>
-                                    <strong>Erreur:</strong> ${status.error || 'Badge non trouvé'}
+                                    <strong>Erreur:</strong> ${status.error || 'Visiteur non trouvé'}
                                 </div>
                             </div>
                         `;
@@ -487,7 +487,7 @@ async function handleFormSubmit(event) {
             return;
         }
         
-        // Effectuer le checkout (utiliser visitorId comme badgeId)
+        // Effectuer le checkout avec uniqueId
         const result = await VisitorService.checkoutVisitor(formData.visitorId);
         
         // Afficher le résultat

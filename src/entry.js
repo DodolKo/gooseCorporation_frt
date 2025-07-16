@@ -3,7 +3,7 @@
  * 
  * Gère deux modes :
  * - Nouveau visiteur : Enregistrement complet
- * - Badge existant : Re-entrée avec ID existant
+ * - Visiteur existant : Re-entrée avec ID existant
  */
 
 /**
@@ -29,7 +29,7 @@ function initEntryChoice() {
         resetAllForms();
     });
 
-    // Gestion du clic sur "Déjà un badge"
+    // Gestion du clic sur "Déjà un visiteur"
     returningVisitorBtn.addEventListener('click', () => {
         // Activer le bouton visiteur de retour
         returningVisitorBtn.classList.add('active');
@@ -81,7 +81,7 @@ async function loadReturnFormData() {
 }
 
 /**
- * Vérifie le statut d'un visiteur avec un badge existant
+ * Vérifie le statut d'un visiteur existant
  * @param {string} visitorId - ID du visiteur à vérifier
  * @returns {Object} Statut du visiteur
  */
@@ -116,7 +116,7 @@ function displayVisitorStatus(visitor) {
     let statusHtml = `
         <div class="visitor-status ${visitor.status === 'INSIDE' ? 'status-inside' : 'status-outside'}">
             <div class="status-header">
-                <h3><i class="fas fa-user-check"></i> Statut du Badge</h3>
+                <h3><i class="fas fa-user-check"></i> Statut du Visiteur</h3>
                 <span class="status-badge status-${visitor.status.toLowerCase()}">
                     ${visitor.status === 'INSIDE' ? 'Dans le bâtiment' : 'Sorti du bâtiment'}
                 </span>
@@ -125,7 +125,7 @@ function displayVisitorStatus(visitor) {
                 <div class="visitor-info">
                     <p><strong>Nom:</strong> ${visitor.firstName} ${visitor.lastName}</p>
                     <p><strong>Email:</strong> ${visitor.email}</p>
-                    <p><strong>ID Badge:</strong> ${visitor.badge?.badgeId || 'Non attribué'}</p>
+                    <p><strong>ID Visiteur:</strong> ${visitor.uniqueId}</p>
                     <p><strong>Dernière entrée:</strong> ${new Date(visitor.checkInTime).toLocaleString('fr-FR')}</p>
                     ${visitor.checkOutTime ? `<p><strong>Dernière sortie:</strong> ${new Date(visitor.checkOutTime).toLocaleString('fr-FR')}</p>` : ''}
                     ${visitor.visitDuration ? `<p><strong>Durée de visite actuelle:</strong> ${visitor.visitDuration}</p>` : ''}
@@ -195,7 +195,7 @@ function handleVisitorIdCheck() {
                             <div class="visitor-status status-error">
                                 <p class="status-message error">
                                     <i class="fas fa-exclamation-triangle"></i>
-                                    ${status.error || 'Badge non trouvé'}
+                                    ${status.error || 'Visiteur non trouvé'}
                                 </p>
                             </div>
                         `;
@@ -221,7 +221,7 @@ function validateReturnForm() {
     
     // Validation de l'ID visiteur
     if (!visitorId || visitorId.length < 10) {
-        showFieldError('visitorId', 'ID de badge invalide');
+                    showFieldError('visitorId', 'ID de visiteur invalide');
         isValid = false;
     } else {
         clearFieldError('visitorId');
@@ -295,7 +295,7 @@ async function handleReturningFormSubmit(event) {
         const status = await checkVisitorStatus(visitorId);
         
         if (!status.exists) {
-            showNotification('Badge non trouvé. Veuillez vérifier votre ID.', 'error');
+            showNotification('Visiteur non trouvé. Veuillez vérifier votre ID.', 'error');
             return;
         }
         
@@ -434,10 +434,10 @@ function validateReturningForm() {
 
     // Validation de l'ID visiteur
     if (!visitorId) {
-        showFieldError('visitorId', 'L\'ID de badge est requis');
+                    showFieldError('visitorId', 'L\'ID de visiteur est requis');
         isValid = false;
     } else if (visitorId.length < 5) {
-        showFieldError('visitorId', 'L\'ID de badge doit contenir au moins 5 caractères');
+                    showFieldError('visitorId', 'L\'ID de visiteur doit contenir au moins 5 caractères');
         isValid = false;
     } else {
         clearFieldError('visitorId');
