@@ -16,6 +16,7 @@ async function waitForGlobals() {
         console.error('❌ Les services globaux ne sont pas disponibles après attente.');
     } else {
         console.log('✅ Services globaux disponibles.');
+        console.log('🔗 API URL configurée:', window.CONFIG.API_BASE_URL);
     }
 }
 

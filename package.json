@@ -4,9 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 10.255.255.254 --port 5173",
+    "dev:network": "vite --host 10.255.255.254 --port 5173",
+    "dev:local": "vite --host 127.0.0.1 --port 5173",
     "build": "node build.cjs",
-    "preview": "vite preview",
+    "preview": "vite preview --host 10.255.255.254 --port 4173",
     "build:netlify": "node build.cjs"
   },
   "devDependencies": {

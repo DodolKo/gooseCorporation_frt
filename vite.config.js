@@ -22,7 +22,9 @@ export default defineConfig({
   // Configuration du serveur de développement
   server: {
     port: 5173,
-    open: true
+    host: '10.255.255.254', // Utiliser une adresse IP spécifique (pas localhost)
+    open: false, // Ne pas ouvrir automatiquement
+    strictPort: true // Échouer si le port est occupé
   },
   
   // Optimisations

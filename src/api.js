@@ -21,7 +21,7 @@ const API_CONFIG = {
     MAX_RETRIES: CONFIG.MAX_RETRIES,
     RETRY_DELAY: CONFIG.RETRY_DELAY,
     CACHE_DURATION: CONFIG.CACHE_DURATION,
-    DEMO_MODE: CONFIG.DEMO_MODE
+    DEMO_MODE: false // TOUJOURS false - jamais de mode démo
 };
 
 // ====================================
@@ -74,63 +74,6 @@ class SimpleCache {
 
 // Instance globale du cache
 const apiCache = new SimpleCache();
-
-// ====================================
-// DONNÉES DE TEST POUR LE MODE DÉMO
-// ====================================
-
-const DEMO_DATA = {
-    staff: [
-        {
-            id: 1,
-            firstName: 'John',
-            lastName: 'Doe',
-            department: 'IT',
-            position: 'Développeur Senior',
-            email: 'john.doe@goosecorp.com'
-        },
-        {
-            id: 2,
-            firstName: 'Marie',
-            lastName: 'Martin',
-            department: 'RH',
-            position: 'Responsable RH',
-            email: 'marie.martin@goosecorp.com'
-        },
-        {
-            id: 3,
-            firstName: 'Pierre',
-            lastName: 'Dubois',
-            department: 'Marketing',
-            position: 'Chef de projet',
-            email: 'pierre.dubois@goosecorp.com'
-        }
-    ],
-    formations: [
-        {
-            id: 1,
-            name: 'Formation Sécurité',
-            description: 'Formation obligatoire sur les règles de sécurité',
-            location: 'Salle de formation A',
-            startDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            endDate: new Date(Date.now() + 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
-            instructor: 'Expert Sécurité',
-            maxParticipants: 20,
-            currentParticipants: 15
-        },
-        {
-            id: 2,
-            name: 'Formation JavaScript',
-            description: 'Initiation au développement JavaScript',
-            location: 'Salle informatique B',
-            startDate: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-            endDate: new Date(Date.now() + 48 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000).toISOString(),
-            instructor: 'Développeur Expert',
-            maxParticipants: 15,
-            currentParticipants: 8
-        }
-    ]
-};
 
 // ====================================
 // CLIENT HTTP AVEC INTERCEPTEURS
@@ -282,14 +225,7 @@ class PublicDataService {
             const response = await apiClient.get('/visitors/public/health');
             return response;
         } catch (error) {
-            console.warn('Health check failed, using demo mode:', error);
-            if (API_CONFIG.DEMO_MODE) {
-                return {
-                    status: 'demo',
-                    timestamp: new Date().toISOString(),
-                    version: '1.0.0-demo'
-                };
-            }
+            console.error('Health check failed:', error);
             throw new Error('API non disponible');
         }
     }
@@ -319,12 +255,7 @@ class PublicDataService {
             
             return response.staff;
         } catch (error) {
-            console.warn('Erreur lors de la récupération du personnel, utilisation des données de test:', error);
-            if (API_CONFIG.DEMO_MODE) {
-                // Stocker les données de test en cache
-                apiCache.set(cacheKey, DEMO_DATA.staff);
-                return DEMO_DATA.staff;
-            }
+            console.error('Erreur lors de la récupération du personnel:', error);
             throw new Error('Impossible de charger la liste du personnel');
         }
     }
@@ -354,22 +285,15 @@ class PublicDataService {
             
             return response.formations;
         } catch (error) {
-            console.warn('Erreur lors de la récupération des formations:', error);
+            console.error('Erreur lors de la récupération des formations:', error);
             
             // En cas d'erreur, retourner un tableau vide plutôt que de lever une exception
             // Cela permet au frontend de fonctionner même si les formations ne sont pas disponibles
             const emptyFormations = [];
             
-            if (API_CONFIG.DEMO_MODE) {
-                // En mode démo, utiliser les données de test
-                apiCache.set(cacheKey, DEMO_DATA.formations);
-                return DEMO_DATA.formations;
-            } else {
-                // En mode normal, retourner un tableau vide avec un avertissement
-                console.warn('Les formations ne sont pas disponibles - le formulaire fonctionnera sans les formations');
-                apiCache.set(cacheKey, emptyFormations, 30000); // Cache plus court pour retry
-                return emptyFormations;
-            }
+            console.warn('Les formations ne sont pas disponibles - le formulaire fonctionnera sans les formations');
+            apiCache.set(cacheKey, emptyFormations, 30000); // Cache plus court pour retry
+            return emptyFormations;
         }
     }
 
@@ -425,37 +349,6 @@ class VisitorService {
         } catch (error) {
             console.error('Erreur lors de la re-entrée:', error);
             
-            if (API_CONFIG.DEMO_MODE) {
-                // Simuler la re-entrée en mode démo
-                const demoReentry = {
-                    id: Math.floor(Math.random() * 1000),
-                    uniqueId: reentryData.visitorId,
-                    visitReason: reentryData.visitReason,
-                    staffId: reentryData.staffId ? parseInt(reentryData.staffId) : null,
-                    formationId: reentryData.formationId ? parseInt(reentryData.formationId) : null,
-                    status: 'INSIDE',
-                    checkInTime: new Date().toISOString(),
-                    checkOutTime: null,
-                    updatedAt: new Date().toISOString(),
-                    isReentry: true
-                };
-                
-                // Ajouter les informations du staff ou formation
-                if (reentryData.staffId) {
-                    demoReentry.staff = DEMO_DATA.staff.find(s => s.id === parseInt(reentryData.staffId));
-                }
-                if (reentryData.formationId) {
-                    demoReentry.formation = DEMO_DATA.formations.find(f => f.id === parseInt(reentryData.formationId));
-                }
-                
-                console.log('Re-entrée simulée en mode démo:', demoReentry);
-                
-                return {
-                    message: 'Visitor re-entry successful (demo mode)',
-                    visitor: demoReentry
-                };
-            }
-            
             // Gestion des erreurs spécifiques du backend réel
             if (error.message.includes('404') || error.status === 404) {
                 throw new Error('ID de visiteur non trouvé. Vérifiez votre ID.');
@@ -491,43 +384,6 @@ class VisitorService {
         } catch (error) {
             console.error('Erreur lors de l\'enregistrement:', error);
             
-            if (API_CONFIG.DEMO_MODE) {
-                // Simuler l'enregistrement avec des données de test
-                const cleanData = this.cleanVisitorData(visitorData);
-                const demoVisitor = {
-                    id: Math.floor(Math.random() * 1000),
-                    uniqueId: 'demo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                    firstName: cleanData.firstName,
-                    lastName: cleanData.lastName,
-                    email: cleanData.email,
-                    phone: cleanData.phone,
-                    company: cleanData.company,
-                    visitReason: cleanData.visitReason,
-                    staffId: cleanData.staffId,
-                    formationId: cleanData.formationId,
-                    status: 'INSIDE',
-                    checkInTime: new Date().toISOString(),
-                    checkOutTime: null,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-                
-                // Ajouter les informations du staff ou formation
-                if (cleanData.staffId) {
-                    demoVisitor.staff = DEMO_DATA.staff.find(s => s.id === cleanData.staffId);
-                }
-                if (cleanData.formationId) {
-                    demoVisitor.formation = DEMO_DATA.formations.find(f => f.id === cleanData.formationId);
-                }
-                
-                console.log('Visiteur enregistré en mode démo:', demoVisitor);
-                
-                return {
-                    message: 'Visitor registered successfully (demo mode)',
-                    visitor: demoVisitor
-                };
-            }
-            
             // Gestion des erreurs spécifiques du backend réel
             if (error.message.includes('429') || error.status === 429) {
                 throw new Error('Trop de tentatives d\'enregistrement. Veuillez patienter quelques minutes.');
@@ -561,36 +417,6 @@ class VisitorService {
             return response;
         } catch (error) {
             console.error('Erreur lors de la sortie:', error);
-            
-            if (API_CONFIG.DEMO_MODE) {
-                // Simuler la sortie avec des données de test
-                if (uniqueId.startsWith('demo_') || uniqueId.startsWith('clx')) {
-                    const demoVisitor = {
-                        id: Math.floor(Math.random() * 1000),
-                        uniqueId: uniqueId,
-                        firstName: 'Demo',
-                        lastName: 'User',
-                        email: 'demo@example.com',
-                        phone: '+32123456789',
-                        company: 'Demo Company',
-                        visitReason: 'OTHER',
-                        status: 'OUTSIDE',
-                        checkInTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2h ago
-                        checkOutTime: new Date().toISOString(),
-                        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                        updatedAt: new Date().toISOString()
-                    };
-                    
-                    console.log('Visiteur sorti en mode démo:', demoVisitor);
-                    
-                    return {
-                        message: 'Visitor checked out successfully (demo mode)',
-                        visitor: demoVisitor
-                    };
-                } else {
-                    throw new Error('ID de visite non trouvé en mode démo. Utilisez un ID généré par l\'application.');
-                }
-            }
             
             // Gestion des erreurs spécifiques du backend réel
             if (error.message.includes('404') || error.status === 404) {
@@ -651,4 +477,4 @@ window.apiCache = apiCache;
 window.API_CONFIG = API_CONFIG;
 window.CONFIG = API_CONFIG; // Ajouter CONFIG pour compatibilité
 
-console.log('🚀 Services API GooseCorp initialisés'); 
+console.log('🚀 Services API GooseCorp initialisés - Mode PRODUCTION uniquement'); 
