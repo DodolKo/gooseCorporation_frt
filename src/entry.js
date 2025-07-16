@@ -231,6 +231,7 @@ function showSuccessResult(visitor, isReentry = false) {
     const emailSpan = document.getElementById('resultEmail');
     const timeSpan = document.getElementById('resultTime');
     const idSpan = document.getElementById('resultId');
+    const reasonSpan = document.getElementById('resultReason');
     const successCard = resultContainer.querySelector('.success-card');
     
     // Adapter le message selon le type d'entrée
@@ -255,6 +256,13 @@ function showSuccessResult(visitor, isReentry = false) {
     
     timeSpan.textContent = new Date(visitor.checkInTime).toLocaleString('fr-FR');
     idSpan.textContent = visitor.uniqueId;
+    
+    // Afficher la raison de la visite
+    const visitReasonText = getVisitReasonText(visitor.visitReason);
+    reasonSpan.textContent = visitReasonText;
+    
+    // Générer le QR code
+    generateQRCode(visitor);
     
     // Masquer les formulaires et afficher le résultat
     document.getElementById('newVisitorForm').classList.add('hidden');
@@ -309,6 +317,77 @@ function resetForm() {
 }
 
 /**
+ * Convertit le code de raison de visite en texte lisible
+ */
+function getVisitReasonText(visitReason) {
+    const reasons = {
+        'MEETING': 'Rendez-vous',
+        'FORMATION': 'Formation',
+        'DELIVERY': 'Livraison',
+        'MAINTENANCE': 'Maintenance',
+        'OTHER': 'Autre'
+    };
+    return reasons[visitReason] || visitReason;
+}
+
+/**
+ * Génère et affiche le QR code contenant les informations de visite
+ */
+function generateQRCode(visitor) {
+    const qrContainer = document.getElementById('qrCodeContainer');
+    
+    // Préparer les données pour le QR code
+    const qrData = {
+        id: visitor.uniqueId,
+        nom: `${visitor.firstName} ${visitor.lastName}`,
+        email: visitor.email,
+        raison: getVisitReasonText(visitor.visitReason),
+        heure: new Date(visitor.checkInTime).toLocaleString('fr-FR'),
+        company: visitor.company || 'Non spécifié'
+    };
+    
+    // Créer le texte du QR code
+    const qrText = `GooseCorp Visitor
+ID: ${qrData.id}
+Nom: ${qrData.nom}
+Email: ${qrData.email}
+Raison: ${qrData.raison}
+Heure: ${qrData.heure}
+Entreprise: ${qrData.company}`;
+    
+    // Vider le conteneur
+    qrContainer.innerHTML = '';
+    
+    // Générer le QR code
+    if (typeof QRCode !== 'undefined') {
+        try {
+            QRCode.toCanvas(qrContainer, qrText, {
+                width: 200,
+                height: 200,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#ffffff'
+                }
+            }, function(error) {
+                if (error) {
+                    console.error('Erreur lors de la génération du QR code:', error);
+                    qrContainer.innerHTML = '<p>Erreur lors de la génération du QR code</p>';
+                } else {
+                    console.log('✅ QR code généré avec succès');
+                }
+            });
+        } catch (error) {
+            console.error('Erreur lors de la génération du QR code:', error);
+            qrContainer.innerHTML = '<p>Erreur lors de la génération du QR code</p>';
+        }
+    } else {
+        console.error('Bibliothèque QRCode non disponible');
+        qrContainer.innerHTML = '<p>Bibliothèque QR code non disponible</p>';
+    }
+}
+
+/**
  * Fonctions utilitaires pour la gestion des erreurs
  */
 function showFieldError(fieldId, message) {
@@ -358,5 +437,7 @@ window.resetForm = resetForm;
 window.showFieldError = showFieldError;
 window.clearFieldError = clearFieldError;
 window.showNotification = showNotification;
+window.getVisitReasonText = getVisitReasonText;
+window.generateQRCode = generateQRCode;
 
 console.log('🎯 Fonctions Entry.js exportées globalement'); 
