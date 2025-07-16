@@ -98,18 +98,29 @@ function setupFormEvents() {
  */
 async function checkVisitorStatusForCheckout(visitorId) {
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/visitors/${visitorId}/status`);
+        const response = await fetch(`${CONFIG.API_BASE_URL}/badges/verify/${visitorId}`);
         
         if (response.status === 404) {
-            return { exists: false, error: 'Visiteur non trouvé' };
+            return { exists: false, error: 'Badge non trouvé' };
         }
         
         if (!response.ok) {
-            throw new Error('Erreur lors de la vérification du statut');
+            const errorData = await response.json();
+            if (errorData.expired) {
+                return { exists: true, error: 'Badge expiré' };
+            }
+            if (errorData.inactive) {
+                return { exists: true, error: 'Badge inactif' };
+            }
+            throw new Error('Erreur lors de la vérification du badge');
         }
         
         const data = await response.json();
-        return data;
+        return {
+            exists: true,
+            visitor: data.badge.visitor,
+            canCheckout: data.badge.visitor.status === 'INSIDE'
+        };
         
     } catch (error) {
         console.error('Erreur lors de la vérification du statut:', error);
@@ -147,7 +158,7 @@ function displayVisitorInfoForCheckout(visitor) {
                 <div class="visitor-details">
                     <p><strong>Nom:</strong> ${visitor.firstName} ${visitor.lastName}</p>
                     <p><strong>Email:</strong> ${visitor.email}</p>
-                    <p><strong>ID Badge:</strong> ${visitor.uniqueId}</p>
+                    <p><strong>ID Badge:</strong> ${visitor.badge?.badgeId || 'Non attribué'}</p>
                     <p><strong>Entrée:</strong> ${new Date(visitor.checkInTime).toLocaleString('fr-FR')}</p>
                     ${visitor.checkOutTime ? `<p><strong>Sortie:</strong> ${new Date(visitor.checkOutTime).toLocaleString('fr-FR')}</p>` : ''}
                     <p><strong>Durée de visite:</strong> ${visitDuration}</p>
@@ -486,7 +497,7 @@ async function handleFormSubmit(event) {
             return;
         }
         
-        // Effectuer le checkout
+        // Effectuer le checkout (utiliser visitorId comme badgeId)
         const result = await VisitorService.checkoutVisitor(formData.visitorId);
         
         // Afficher le résultat

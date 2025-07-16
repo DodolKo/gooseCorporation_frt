@@ -125,7 +125,7 @@ function displayVisitorStatus(visitor) {
                 <div class="visitor-info">
                     <p><strong>Nom:</strong> ${visitor.firstName} ${visitor.lastName}</p>
                     <p><strong>Email:</strong> ${visitor.email}</p>
-                    <p><strong>ID Badge:</strong> ${visitor.uniqueId}</p>
+                    <p><strong>ID Badge:</strong> ${visitor.badge?.badgeId || 'Non attribué'}</p>
                     <p><strong>Dernière entrée:</strong> ${new Date(visitor.checkInTime).toLocaleString('fr-FR')}</p>
                     ${visitor.checkOutTime ? `<p><strong>Dernière sortie:</strong> ${new Date(visitor.checkOutTime).toLocaleString('fr-FR')}</p>` : ''}
                     ${visitor.visitDuration ? `<p><strong>Durée de visite actuelle:</strong> ${visitor.visitDuration}</p>` : ''}
